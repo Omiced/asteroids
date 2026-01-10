@@ -10,3 +10,4 @@ wheels/
 .venv
 #jq generated files
 game_state.jsonl
+games_events.jsonl
