@@ -1,10 +1,12 @@
 from circleshape import CircleShape
-from constants import PLAYER_RADIUS, LINE_WIDTH, PLAYER_TURN_SPEED, PLAYER_SPEED
+from constants import PLAYER_RADIUS, LINE_WIDTH, PLAYER_TURN_SPEED, PLAYER_SPEED, PLAYER_SHOT_SPEED, PLAYER_SHOOT_COOLDOWN_SECONDS
+from shot import Shot
 import pygame
 class Player(CircleShape):
     def __init__(self,x,y):
         super().__init__(x,y, PLAYER_RADIUS)
         self.rotation = 0
+        self.shoot_timer = 0
     def draw(self, screen):
         pygame.draw.polygon(screen, "white", self.triangle(), LINE_WIDTH)
 
@@ -22,7 +24,7 @@ class Player(CircleShape):
 
     def update(self, dt):
         keys = pygame.key.get_pressed()
-
+        self.shoot_timer = self.shoot_timer - dt
         if keys[pygame.K_a]:
             self.rotate(dt * -1)
         if keys[pygame.K_d]:
@@ -31,6 +33,11 @@ class Player(CircleShape):
             self.move(dt)
         if keys[pygame.K_s]:
             self.move(-dt)
+        if keys[pygame.K_SPACE]:
+            if self.shoot_timer > 0:
+                return
+            self.shoot_timer = PLAYER_SHOOT_COOLDOWN_SECONDS
+            self.shoot()
 
     def move(self, dt):
         #inivializamos un vector en posicion (0,1)
@@ -40,3 +47,7 @@ class Player(CircleShape):
         #multiplicamos la velocidad del jugador * dt * el vector para obtener la distancia que se movera el jugador
         rotated_with_speed_vector = rotated_vector * PLAYER_SPEED * dt
         self.position += rotated_with_speed_vector  
+    
+    def shoot(self) :
+        player_shot = Shot(self.position.x,  self.position.y)
+        player_shot.velocity = pygame.Vector2(0,1).rotate(self.rotation) * PLAYER_SHOT_SPEED
